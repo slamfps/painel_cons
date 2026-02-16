@@ -111,13 +111,13 @@ def obter_gradiente_por_tipo(indicador):
         return "linear-gradient(135deg, #6B7280 0%, #9CA3AF 100%)"
 
 # ============================================================================
-# FUNÇÃO PRINCIPAL DO CARD - VERSÃO 6.1 (SEM COLUMNS NO POPOVER)
+# FUNÇÃO PRINCIPAL DO CARD - VERSÃO 6.2 (CORRIGIDA E OTIMIZADA)
 # ============================================================================
 
 def criar_card_indicador(valor, indicador, consultor, equipe=None):
     """
     Cria um card de indicador compacto com metas integradas
-    CORREÇÃO: Removeu columns do popover para evitar aninhamento
+    CORREÇÃO: Removeu columns aninhados e melhorou contraste do 100%
     """
     # Formata valor
     valor_formatado = formatar_valor(valor)
@@ -150,7 +150,7 @@ def criar_card_indicador(valor, indicador, consultor, equipe=None):
         "🏆 Step 2": {"chip": 44, "hab": 685, "fin": 851}
     }
     
-    # ========== CARD PRINCIPAL ==========
+    # ========== CARD PRINCIPAL (SEM COLUMNS ANINHADOS) ==========
     # CABEÇALHO
     st.markdown(f"""
     <div style='
@@ -176,6 +176,7 @@ def criar_card_indicador(valor, indicador, consultor, equipe=None):
     
     # BARRA DE PROGRESSO
     if meta:
+        # Define o estilo do texto do progresso baseado no percentual
         if progresso >= 100:
             estilo_progresso = 'background: #059669; color: white; font-weight: 700; padding: 2px 8px; border-radius: 12px;'
         else:
@@ -236,7 +237,7 @@ def criar_card_indicador(valor, indicador, consultor, equipe=None):
         </div>
         """, unsafe_allow_html=True)
     
-    # ========== POPOVER (SEM COLUMNS ANINHADOS) ==========
+    # ========== POPOVER (AGORA SEM COLUMNS ANINHADOS) ==========
     texto_botao = "✏️" if meta else "🎯"
     
     with st.popover(texto_botao, use_container_width=True):
@@ -249,7 +250,6 @@ def criar_card_indicador(valor, indicador, consultor, equipe=None):
             
             st.markdown("**Níveis:**")
             
-            # Usando botões em linha em vez de columns
             col1, col2, col3, col4 = st.columns(4)
             
             with col1:

@@ -38,10 +38,14 @@ def extrair_equipe_nome(usuario):
     return "", str(usuario)
 
 def formatar_valor(valor, formato='auto'):
-    """Formata valores para exibição."""
+    """
+    Formata valores para exibição.
+    CORREÇÃO: Trata None e NaN, sempre retorna string
+    """
     try:
-        if pd.isna(valor):
-            return "N/A"
+        # Trata valores nulos
+        if valor is None or pd.isna(valor):
+            return "0"
         
         valor_str = str(valor).strip()
         
@@ -57,26 +61,26 @@ def formatar_valor(valor, formato='auto'):
         if formato == 'porcentagem':
             return f"{num:.1f}%"
         elif formato == 'inteiro':
-            return f"{num:,.0f}"
+            return f"{num:,.0f}".replace(",", ".")
         elif formato == 'decimal':
             if abs(num) >= 1000:
-                return f"{num:,.0f}"
+                return f"{num:,.0f}".replace(",", ".")
             elif abs(num) >= 1:
-                return f"{num:,.1f}"
+                return f"{num:,.1f}".replace(",", ".")
             else:
-                return f"{num:.3f}"
+                return f"{num:.3f}".replace(".", ",")
         else:  # auto
             if num == 0:
                 return "0"
             elif abs(num) >= 1000:
-                return f"{num:,.0f}"
+                return f"{num:,.0f}".replace(",", ".")
             elif abs(num) >= 1:
-                return f"{num:,.1f}"
+                return f"{num:,.1f}".replace(",", ".")
             else:
-                return f"{num:.3f}"
+                return f"{num:.3f}".replace(".", ",")
             
-    except (ValueError, AttributeError):
-        return str(valor)
+    except (ValueError, AttributeError, TypeError):
+        return "0"  # Sempre retorna string
 
 def carregar_csv(file_uploader):
     """Carrega CSV detectando separador automaticamente."""
