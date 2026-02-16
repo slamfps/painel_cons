@@ -111,13 +111,13 @@ def obter_gradiente_por_tipo(indicador):
         return "linear-gradient(135deg, #6B7280 0%, #9CA3AF 100%)"
 
 # ============================================================================
-# FUNÇÃO PRINCIPAL DO CARD - VERSÃO 5.6 (CORRIGIDA - PROGRESSO 100% VISÍVEL)
+# FUNÇÃO PRINCIPAL DO CARD - VERSÃO 6.0 (SEM ANINHAMENTO DE COLUMNS)
 # ============================================================================
 
 def criar_card_indicador(valor, indicador, consultor, equipe=None):
     """
     Cria um card de indicador compacto com metas integradas
-    CORREÇÃO: Progresso 100% agora tem fundo verde escuro com texto BRANCO
+    CORREÇÃO: Removeu st.columns(1) para evitar aninhamento
     """
     # Formata valor
     valor_formatado = formatar_valor(valor)
@@ -150,209 +150,205 @@ def criar_card_indicador(valor, indicador, consultor, equipe=None):
         "🏆 Step 2": {"chip": 44, "hab": 685, "fin": 851}
     }
     
-    # ========== CONTAINER PRINCIPAL ==========
-    with st.container():
-        col_card = st.columns(1)[0]
+    # ========== CARD PRINCIPAL (sem columns aninhado) ==========
+    # CABEÇALHO
+    st.markdown(f"""
+    <div style='
+        background: {gradiente};
+        padding: 10px 14px;
+        color: white;
+        border-radius: 8px 8px 0 0;
+        margin: 0;
+    '>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 12px; font-weight: 600;">
+                {indicador[:18]}{'...' if len(indicador) > 18 else ''}
+            </span>
+            <span style="font-size: 9px; background: rgba(255,255,255,0.2); 
+                        padding: 2px 6px; border-radius: 10px;">
+                {valor_formatado}
+            </span>
+        </div>
+        <div style="margin: 4px 0 0 0; font-size: 22px; font-weight: 700;">
+            {valor_formatado}
+        </div>
+    """, unsafe_allow_html=True)
+    
+    # BARRA DE PROGRESSO
+    if meta:
+        # Define o estilo do texto do progresso baseado no percentual
+        if progresso >= 100:
+            estilo_progresso = 'background: #059669; color: white; font-weight: 700; padding: 2px 8px; border-radius: 12px;'
+        else:
+            estilo_progresso = f'font-weight: 600; color: {cor_progresso};'
         
-        with col_card:
-            # ----- CABEÇALHO COMPACTO -----
-            st.markdown(f"""
-            <div style='
-                background: {gradiente};
-                padding: 10px 14px;
-                color: white;
-                border-radius: 8px 8px 0 0;
-                margin: 0;
-            '>
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span style="font-size: 12px; font-weight: 600;">
-                        {indicador[:18]}{'...' if len(indicador) > 18 else ''}
-                    </span>
-                    <span style="font-size: 9px; background: rgba(255,255,255,0.2); 
-                                padding: 2px 6px; border-radius: 10px;">
-                        {valor_formatado}
-                    </span>
-                </div>
-                <div style="margin: 4px 0 0 0; font-size: 22px; font-weight: 700;">
-                    {valor_formatado}
-                </div>
-            """, unsafe_allow_html=True)
+        st.markdown(f"""
+        <div style='
+            background: {gradiente};
+            padding: 0 14px 10px 14px;
+            color: white;
+            margin: 0;
+        '>
+            <div style="display: flex; justify-content: space-between; font-size: 10px; margin-bottom: 2px;">
+                <span>Meta: {meta_valor_formatado}</span>
+                <span style="{estilo_progresso}">{texto_progresso}</span>
+            </div>
+            <div style="width: 100%; height: 4px; background: rgba(255,255,255,0.3); border-radius: 2px;">
+                <div style="width: {min(progresso, 100)}%; height: 100%; 
+                            background: {cor_progresso}; border-radius: 2px;"></div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+    else:
+        st.markdown("</div>", unsafe_allow_html=True)
+    
+    # CORPO DO CARD
+    if meta:
+        st.markdown(f"""
+        <div style='
+            background: #F9FAFB;
+            padding: 10px;
+            color: #111827;
+            border-radius: 0 0 8px 8px;
+            border: 1px solid #E5E7EB;
+            border-top: none;
+        '>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 11px; color: #6B7280;">🎯 Meta</span>
+                <span style="font-size: 13px; font-weight: 700; color: #059669;">
+                    {meta_valor_formatado}
+                </span>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+    else:
+        st.markdown("""
+        <div style='
+            background: #F9FAFB;
+            padding: 10px;
+            border-radius: 0 0 8px 8px;
+            border: 1px dashed #9CA3AF;
+            border-top: none;
+            text-align: center;
+        '>
+            <span style="font-size: 11px; color: #6B7280;">
+                ⚡ Sem meta
+            </span>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # ========== POPOVER (fora do card) ==========
+    texto_botao = "✏️" if meta else "🎯"
+    
+    with st.popover(texto_botao, use_container_width=True):
+        st.markdown(f"**{indicador[:30]}**")
+        st.metric("Atual", valor_formatado, delta=None)
+        
+        # ----- CHIP HABILITADO -----
+        if "CHIP" in indicador.upper() and "HABILITADO" in indicador.upper():
+            meta_atual = meta['valor'] if meta else None
             
-            # ----- BARRA DE PROGRESSO COMPACTA -----
-            if meta:
-                # Define o estilo do texto do progresso baseado no percentual
-                if progresso >= 100:
-                    estilo_progresso = 'background: #059669; color: white; font-weight: 700; padding: 2px 8px; border-radius: 12px;'
+            st.markdown("**Níveis:**")
+            
+            col1, col2 = st.columns(2)
+            col3, col4 = st.columns(2)
+            
+            def salvar_meta_integrada(nivel):
+                metas = METAS_CHIP[nivel]
+                salvar_meta(indicador, metas["chip"], consultor, equipe)
+                if 'PONTOS HAB TOTAL' in st.session_state.get('todos_indicadores', []):
+                    salvar_meta('PONTOS HAB TOTAL', metas["hab"], consultor, equipe)
+                if 'PONTOS FIN TOTAL' in st.session_state.get('todos_indicadores', []):
+                    salvar_meta('PONTOS FIN TOTAL', metas["fin"], consultor, equipe)
+                st.rerun()
+            
+            # Botões em grid compacto
+            with col1:
+                if meta_atual == 23:
+                    st.success("🥉")
+                    if st.button("Remover", key=f"rm_p_{hash_id}"):
+                        remover_meta(indicador, consultor, equipe)
+                        remover_meta('PONTOS HAB TOTAL', consultor, equipe)
+                        remover_meta('PONTOS FIN TOTAL', consultor, equipe)
+                        st.rerun()
                 else:
-                    estilo_progresso = f'font-weight: 600; color: {cor_progresso};'
-                
-                st.markdown(f"""
-                <div style='
-                    background: {gradiente};
-                    padding: 0 14px 10px 14px;
-                    color: white;
-                    margin: 0;
-                '>
-                    <div style="display: flex; justify-content: space-between; font-size: 10px; margin-bottom: 2px;">
-                        <span>Meta: {meta_valor_formatado}</span>
-                        <span style="{estilo_progresso}">{texto_progresso}</span>
-                    </div>
-                    <div style="width: 100%; height: 4px; background: rgba(255,255,255,0.3); border-radius: 2px;">
-                        <div style="width: {min(progresso, 100)}%; height: 100%; 
-                                    background: {cor_progresso}; border-radius: 2px;"></div>
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
-            else:
-                st.markdown("</div>", unsafe_allow_html=True)
+                    if st.button("🥉", key=f"p_{hash_id}"):
+                        salvar_meta_integrada("🥉 Prata")
             
-            # ----- CORPO COMPACTO -----
+            with col2:
+                if meta_atual == 29:
+                    st.success("🥈")
+                    if st.button("Remover", key=f"rm_o_{hash_id}"):
+                        remover_meta(indicador, consultor, equipe)
+                        remover_meta('PONTOS HAB TOTAL', consultor, equipe)
+                        remover_meta('PONTOS FIN TOTAL', consultor, equipe)
+                        st.rerun()
+                else:
+                    if st.button("🥈", key=f"o_{hash_id}"):
+                        salvar_meta_integrada("🥈 Ouro")
+            
+            with col3:
+                if meta_atual == 39:
+                    st.success("📊")
+                    if st.button("Remover", key=f"rm_s1_{hash_id}"):
+                        remover_meta(indicador, consultor, equipe)
+                        remover_meta('PONTOS HAB TOTAL', consultor, equipe)
+                        remover_meta('PONTOS FIN TOTAL', consultor, equipe)
+                        st.rerun()
+                else:
+                    if st.button("📊1", key=f"s1_{hash_id}"):
+                        salvar_meta_integrada("📊 Step 1")
+            
+            with col4:
+                if meta_atual == 44:
+                    st.success("🏆")
+                    if st.button("Remover", key=f"rm_s2_{hash_id}"):
+                        remover_meta(indicador, consultor, equipe)
+                        remover_meta('PONTOS HAB TOTAL', consultor, equipe)
+                        remover_meta('PONTOS FIN TOTAL', consultor, equipe)
+                        st.rerun()
+                else:
+                    if st.button("🏆2", key=f"s2_{hash_id}"):
+                        salvar_meta_integrada("🏆 Step 2")
+        
+        # ----- CVS -----
+        elif "CVS" in indicador.upper() and "CALLBACK" in indicador.upper():
             if meta:
-                st.markdown(f"""
-                <div style='
-                    background: #F9FAFB;
-                    padding: 10px;
-                    color: #111827;
-                    border-radius: 0 0 8px 8px;
-                    border: 1px solid #E5E7EB;
-                    border-top: none;
-                '>
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 11px; color: #6B7280;">🎯 Meta</span>
-                        <span style="font-size: 13px; font-weight: 700; color: #059669;">
-                            {meta_valor_formatado}
-                        </span>
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
+                valor_sugerido = float(meta['valor'])
             else:
-                st.markdown("""
-                <div style='
-                    background: #F9FAFB;
-                    padding: 10px;
-                    border-radius: 0 0 8px 8px;
-                    border: 1px dashed #9CA3AF;
-                    border-top: none;
-                    text-align: center;
-                '>
-                    <span style="font-size: 11px; color: #6B7280;">
-                        ⚡ Sem meta
-                    </span>
-                </div>
-                """, unsafe_allow_html=True)
-        
-        # ========== POPOVER COMPACTO ==========
-        texto_botao = "✏️" if meta else "🎯"
-        
-        with st.popover(texto_botao, use_container_width=True):
-            st.markdown(f"**{indicador[:30]}**")
-            st.metric("Atual", valor_formatado, delta=None)
+                try:
+                    valor_sugerido = float(str(valor).replace(',', '.').replace('%', '')) * 1.1
+                except:
+                    valor_sugerido = 0.0
             
-            # ----- CHIP HABILITADO -----
-            if "CHIP" in indicador.upper() and "HABILITADO" in indicador.upper():
-                meta_atual = meta['valor'] if meta else None
-                
-                st.markdown("**Níveis:**")
-                
-                col1, col2 = st.columns(2)
-                col3, col4 = st.columns(2)
-                
-                def salvar_meta_integrada(nivel):
-                    metas = METAS_CHIP[nivel]
-                    salvar_meta(indicador, metas["chip"], consultor, equipe)
-                    if 'PONTOS HAB TOTAL' in st.session_state.get('todos_indicadores', []):
-                        salvar_meta('PONTOS HAB TOTAL', metas["hab"], consultor, equipe)
-                    if 'PONTOS FIN TOTAL' in st.session_state.get('todos_indicadores', []):
-                        salvar_meta('PONTOS FIN TOTAL', metas["fin"], consultor, equipe)
-                    st.rerun()
-                
-                # Botões em grid compacto
-                with col1:
-                    if meta_atual == 23:
-                        st.success("🥉")
-                        if st.button("Remover", key=f"rm_p_{hash_id}"):
-                            remover_meta(indicador, consultor, equipe)
-                            remover_meta('PONTOS HAB TOTAL', consultor, equipe)
-                            remover_meta('PONTOS FIN TOTAL', consultor, equipe)
-                            st.rerun()
-                    else:
-                        if st.button("🥉", key=f"p_{hash_id}"):
-                            salvar_meta_integrada("🥉 Prata")
-                
-                with col2:
-                    if meta_atual == 29:
-                        st.success("🥈")
-                        if st.button("Remover", key=f"rm_o_{hash_id}"):
-                            remover_meta(indicador, consultor, equipe)
-                            remover_meta('PONTOS HAB TOTAL', consultor, equipe)
-                            remover_meta('PONTOS FIN TOTAL', consultor, equipe)
-                            st.rerun()
-                    else:
-                        if st.button("🥈", key=f"o_{hash_id}"):
-                            salvar_meta_integrada("🥈 Ouro")
-                
-                with col3:
-                    if meta_atual == 39:
-                        st.success("📊")
-                        if st.button("Remover", key=f"rm_s1_{hash_id}"):
-                            remover_meta(indicador, consultor, equipe)
-                            remover_meta('PONTOS HAB TOTAL', consultor, equipe)
-                            remover_meta('PONTOS FIN TOTAL', consultor, equipe)
-                            st.rerun()
-                    else:
-                        if st.button("📊1", key=f"s1_{hash_id}"):
-                            salvar_meta_integrada("📊 Step 1")
-                
-                with col4:
-                    if meta_atual == 44:
-                        st.success("🏆")
-                        if st.button("Remover", key=f"rm_s2_{hash_id}"):
-                            remover_meta(indicador, consultor, equipe)
-                            remover_meta('PONTOS HAB TOTAL', consultor, equipe)
-                            remover_meta('PONTOS FIN TOTAL', consultor, equipe)
-                            st.rerun()
-                    else:
-                        if st.button("🏆2", key=f"s2_{hash_id}"):
-                            salvar_meta_integrada("🏆 Step 2")
+            nova_meta = st.number_input(
+                "Meta:",
+                value=float(valor_sugerido) if valor_sugerido > 0 else 0.0,
+                min_value=0.0,
+                step=1.0,
+                format="%.1f",
+                key=f"cvs_{hash_id}",
+                label_visibility="collapsed",
+                placeholder="Valor da meta"
+            )
             
-            # ----- CVS -----
-            elif "CVS" in indicador.upper() and "CALLBACK" in indicador.upper():
+            col_s, col_r = st.columns(2)
+            with col_s:
+                if st.button("💾", key=f"save_cvs_{hash_id}", use_container_width=True):
+                    if salvar_meta(indicador, nova_meta, consultor, equipe):
+                        st.rerun()
+            with col_r:
                 if meta:
-                    valor_sugerido = float(meta['valor'])
-                else:
-                    try:
-                        valor_sugerido = float(str(valor).replace(',', '.').replace('%', '')) * 1.1
-                    except:
-                        valor_sugerido = 0.0
-                
-                nova_meta = st.number_input(
-                    "Meta:",
-                    value=float(valor_sugerido) if valor_sugerido > 0 else 0.0,
-                    min_value=0.0,
-                    step=1.0,
-                    format="%.1f",
-                    key=f"cvs_{hash_id}",
-                    label_visibility="collapsed",
-                    placeholder="Valor da meta"
-                )
-                
-                col_s, col_r = st.columns(2)
-                with col_s:
-                    if st.button("💾", key=f"save_cvs_{hash_id}", use_container_width=True):
-                        if salvar_meta(indicador, nova_meta, consultor, equipe):
+                    if st.button("🗑️", key=f"rm_cvs_{hash_id}", use_container_width=True):
+                        if remover_meta(indicador, consultor, equipe):
                             st.rerun()
-                with col_r:
-                    if meta:
-                        if st.button("🗑️", key=f"rm_cvs_{hash_id}", use_container_width=True):
-                            if remover_meta(indicador, consultor, equipe):
-                                st.rerun()
-            
-            # ----- OUTROS -----
+        
+        # ----- OUTROS -----
+        else:
+            if "PONTOS" in indicador.upper():
+                st.caption("Controlado pelo CHIP")
             else:
-                if "PONTOS" in indicador.upper():
-                    st.caption("Controlado pelo CHIP")
-                else:
-                    st.caption("Meta apenas para CHIP/CVS")
+                st.caption("Meta apenas para CHIP/CVS")
     
     return meta
 
