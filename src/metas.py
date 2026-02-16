@@ -111,13 +111,13 @@ def obter_gradiente_por_tipo(indicador):
         return "linear-gradient(135deg, #6B7280 0%, #9CA3AF 100%)"
 
 # ============================================================================
-# FUNÇÃO PRINCIPAL DO CARD - VERSÃO 6.0 (SEM ANINHAMENTO DE COLUMNS)
+# FUNÇÃO PRINCIPAL DO CARD - VERSÃO 6.1 (SEM COLUMNS NO POPOVER)
 # ============================================================================
 
 def criar_card_indicador(valor, indicador, consultor, equipe=None):
     """
     Cria um card de indicador compacto com metas integradas
-    CORREÇÃO: Removeu st.columns(1) para evitar aninhamento
+    CORREÇÃO: Removeu columns do popover para evitar aninhamento
     """
     # Formata valor
     valor_formatado = formatar_valor(valor)
@@ -150,7 +150,7 @@ def criar_card_indicador(valor, indicador, consultor, equipe=None):
         "🏆 Step 2": {"chip": 44, "hab": 685, "fin": 851}
     }
     
-    # ========== CARD PRINCIPAL (sem columns aninhado) ==========
+    # ========== CARD PRINCIPAL ==========
     # CABEÇALHO
     st.markdown(f"""
     <div style='
@@ -176,7 +176,6 @@ def criar_card_indicador(valor, indicador, consultor, equipe=None):
     
     # BARRA DE PROGRESSO
     if meta:
-        # Define o estilo do texto do progresso baseado no percentual
         if progresso >= 100:
             estilo_progresso = 'background: #059669; color: white; font-weight: 700; padding: 2px 8px; border-radius: 12px;'
         else:
@@ -237,7 +236,7 @@ def criar_card_indicador(valor, indicador, consultor, equipe=None):
         </div>
         """, unsafe_allow_html=True)
     
-    # ========== POPOVER (fora do card) ==========
+    # ========== POPOVER (SEM COLUMNS ANINHADOS) ==========
     texto_botao = "✏️" if meta else "🎯"
     
     with st.popover(texto_botao, use_container_width=True):
@@ -250,66 +249,80 @@ def criar_card_indicador(valor, indicador, consultor, equipe=None):
             
             st.markdown("**Níveis:**")
             
-            col1, col2 = st.columns(2)
-            col3, col4 = st.columns(2)
+            # Usando botões em linha em vez de columns
+            col1, col2, col3, col4 = st.columns(4)
             
-            def salvar_meta_integrada(nivel):
-                metas = METAS_CHIP[nivel]
-                salvar_meta(indicador, metas["chip"], consultor, equipe)
-                if 'PONTOS HAB TOTAL' in st.session_state.get('todos_indicadores', []):
-                    salvar_meta('PONTOS HAB TOTAL', metas["hab"], consultor, equipe)
-                if 'PONTOS FIN TOTAL' in st.session_state.get('todos_indicadores', []):
-                    salvar_meta('PONTOS FIN TOTAL', metas["fin"], consultor, equipe)
-                st.rerun()
-            
-            # Botões em grid compacto
             with col1:
                 if meta_atual == 23:
                     st.success("🥉")
-                    if st.button("Remover", key=f"rm_p_{hash_id}"):
+                    if st.button("Remover", key=f"rm_p_{hash_id}", use_container_width=True):
                         remover_meta(indicador, consultor, equipe)
                         remover_meta('PONTOS HAB TOTAL', consultor, equipe)
                         remover_meta('PONTOS FIN TOTAL', consultor, equipe)
                         st.rerun()
                 else:
-                    if st.button("🥉", key=f"p_{hash_id}"):
-                        salvar_meta_integrada("🥉 Prata")
+                    if st.button("🥉", key=f"p_{hash_id}", use_container_width=True):
+                        metas = METAS_CHIP["🥉 Prata"]
+                        salvar_meta(indicador, metas["chip"], consultor, equipe)
+                        if 'PONTOS HAB TOTAL' in st.session_state.get('todos_indicadores', []):
+                            salvar_meta('PONTOS HAB TOTAL', metas["hab"], consultor, equipe)
+                        if 'PONTOS FIN TOTAL' in st.session_state.get('todos_indicadores', []):
+                            salvar_meta('PONTOS FIN TOTAL', metas["fin"], consultor, equipe)
+                        st.rerun()
             
             with col2:
                 if meta_atual == 29:
                     st.success("🥈")
-                    if st.button("Remover", key=f"rm_o_{hash_id}"):
+                    if st.button("Remover", key=f"rm_o_{hash_id}", use_container_width=True):
                         remover_meta(indicador, consultor, equipe)
                         remover_meta('PONTOS HAB TOTAL', consultor, equipe)
                         remover_meta('PONTOS FIN TOTAL', consultor, equipe)
                         st.rerun()
                 else:
-                    if st.button("🥈", key=f"o_{hash_id}"):
-                        salvar_meta_integrada("🥈 Ouro")
+                    if st.button("🥈", key=f"o_{hash_id}", use_container_width=True):
+                        metas = METAS_CHIP["🥈 Ouro"]
+                        salvar_meta(indicador, metas["chip"], consultor, equipe)
+                        if 'PONTOS HAB TOTAL' in st.session_state.get('todos_indicadores', []):
+                            salvar_meta('PONTOS HAB TOTAL', metas["hab"], consultor, equipe)
+                        if 'PONTOS FIN TOTAL' in st.session_state.get('todos_indicadores', []):
+                            salvar_meta('PONTOS FIN TOTAL', metas["fin"], consultor, equipe)
+                        st.rerun()
             
             with col3:
                 if meta_atual == 39:
                     st.success("📊")
-                    if st.button("Remover", key=f"rm_s1_{hash_id}"):
+                    if st.button("Remover", key=f"rm_s1_{hash_id}", use_container_width=True):
                         remover_meta(indicador, consultor, equipe)
                         remover_meta('PONTOS HAB TOTAL', consultor, equipe)
                         remover_meta('PONTOS FIN TOTAL', consultor, equipe)
                         st.rerun()
                 else:
-                    if st.button("📊1", key=f"s1_{hash_id}"):
-                        salvar_meta_integrada("📊 Step 1")
+                    if st.button("📊1", key=f"s1_{hash_id}", use_container_width=True):
+                        metas = METAS_CHIP["📊 Step 1"]
+                        salvar_meta(indicador, metas["chip"], consultor, equipe)
+                        if 'PONTOS HAB TOTAL' in st.session_state.get('todos_indicadores', []):
+                            salvar_meta('PONTOS HAB TOTAL', metas["hab"], consultor, equipe)
+                        if 'PONTOS FIN TOTAL' in st.session_state.get('todos_indicadores', []):
+                            salvar_meta('PONTOS FIN TOTAL', metas["fin"], consultor, equipe)
+                        st.rerun()
             
             with col4:
                 if meta_atual == 44:
                     st.success("🏆")
-                    if st.button("Remover", key=f"rm_s2_{hash_id}"):
+                    if st.button("Remover", key=f"rm_s2_{hash_id}", use_container_width=True):
                         remover_meta(indicador, consultor, equipe)
                         remover_meta('PONTOS HAB TOTAL', consultor, equipe)
                         remover_meta('PONTOS FIN TOTAL', consultor, equipe)
                         st.rerun()
                 else:
-                    if st.button("🏆2", key=f"s2_{hash_id}"):
-                        salvar_meta_integrada("🏆 Step 2")
+                    if st.button("🏆2", key=f"s2_{hash_id}", use_container_width=True):
+                        metas = METAS_CHIP["🏆 Step 2"]
+                        salvar_meta(indicador, metas["chip"], consultor, equipe)
+                        if 'PONTOS HAB TOTAL' in st.session_state.get('todos_indicadores', []):
+                            salvar_meta('PONTOS HAB TOTAL', metas["hab"], consultor, equipe)
+                        if 'PONTOS FIN TOTAL' in st.session_state.get('todos_indicadores', []):
+                            salvar_meta('PONTOS FIN TOTAL', metas["fin"], consultor, equipe)
+                        st.rerun()
         
         # ----- CVS -----
         elif "CVS" in indicador.upper() and "CALLBACK" in indicador.upper():
